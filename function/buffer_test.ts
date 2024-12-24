@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertFalse } from "@std/assert";
 import { assert, is } from "@core/unknownutil";
 import { test } from "@denops/test";
 import type { BufInfo } from "./types.ts";
@@ -61,5 +61,17 @@ test({
       },
     });
     await denops.cmd("1,$bwipeout!");
+
+    await t.step({
+      name: "getbufinfo() will filter buffer-local variables",
+      fn: async () => {
+        await denops.cmd("enew!");
+        await denops.cmd("let b:var = 0");
+
+        const actual = await buffer.getbufinfo(denops);
+        assertEquals(actual.length, 1);
+        assertFalse("variables" in actual[0]);
+      },
+    });
   },
 });

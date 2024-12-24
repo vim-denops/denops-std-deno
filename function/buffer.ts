@@ -414,6 +414,9 @@ export async function deletebufline(
  *                             name  sign name
  *         variables       A reference to the dictionary with
  *                         buffer-local variables.
+ *                         CAUTION: Different from the builtin getbufnr()
+ *                         function, denops-std's getbufnr() function doesn't
+ *                         return this entry.
  *         windows         List of `window-ID`s that display this
  *                         buffer
  *         popups          List of popup `window-ID`s that
@@ -437,6 +440,10 @@ export async function deletebufline(
  * Can also be used as a `method`:
  *
  *     GetBufnr()->getbufinfo()
+ *
+ * CAUTION: Different from the builtin getbufnr() function, denops-std's
+ * getbufnr() function omits the "variables" entry from the returned
+ * dictionary.
  */
 export function getbufinfo(
   denops: Denops,
@@ -450,7 +457,12 @@ export async function getbufinfo(
   denops: Denops,
   ...args: unknown[]
 ): Promise<BufInfo[]> {
-  const bufinfos = await denops.call("getbufinfo", ...args) as Record<
+  const bufinfos = await denops.eval(
+    "map(call('getbufinfo', l:args), {_, v -> filter(v, {k -> k !=# 'variables'})})",
+    {
+      args: args,
+    },
+  ) as Record<
     keyof BufInfo,
     unknown
   >[];
