@@ -105,5 +105,41 @@ test({
         },
       });
     }
+
+    await t.step({
+      name: `open() with relative cursor`,
+      fn: async () => {
+        await fn.append(denops, 0, [
+          "0123456789",
+          "0123456789",
+          "0123456789",
+          "0123456789",
+          "0123456789",
+          "0123456789",
+          "0123456789",
+          "0123456789",
+          "0123456789",
+          "0123456789",
+        ]);
+        await fn.cursor(denops, [5, 5]);
+
+        await using popupWindow = await popup.open(denops, {
+          relative: "cursor",
+          width: 20,
+          height: 20,
+          row: 3,
+          col: 3,
+          anchor: "NW",
+        });
+
+        assertEquals(await fn.win_gettype(denops, popupWindow.winid), "popup");
+        assertEquals(await fn.winwidth(denops, popupWindow.winid), 20);
+        assertEquals(await fn.winheight(denops, popupWindow.winid), 20);
+
+        const info = (await fn.getwininfo(denops, popupWindow.winid))[0];
+        assertEquals(info.winrow, 7, "winrow should be 7");
+        assertEquals(info.wincol, 7, "wincol should be 7");
+      },
+    });
   },
 });
